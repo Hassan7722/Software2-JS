@@ -1,27 +1,51 @@
 'use strict';
 
 const form = document.querySelector('#tv-search');
-const target = document.querySelector('#results');
+const results = document.querySelector('#results');
 
-form.addEventListener('submit', async function(evt) {
+form.addEventListener('submit', async function (evt) {
   evt.preventDefault();
-  // clear old results
-  target.innerHTML = '';
 
-  const data = new FormData(form);
-  const queryString = new URLSearchParams(data).toString();
+  results.innerHTML = '';
 
-  const response = await fetch(form.action + '?' + queryString);
-  const showItems = await response.json();
+  const query = document.querySelector('#query').value;
 
-  for (const item of showItems) {
+  const response = await fetch(`https://api.tvmaze.com/search/shows?q=${query}`);
+  const data = await response.json();
+
+  console.log(data); // for console task
+
+  for (let i = 0; i < data.length; i++) {
+    const item = data[i];
+    const show = item.show;
+
     const article = document.createElement('article');
-    console.log(item);
-    console.log(item.show.name);
-    const h2 = document.createElement('h2');
-    h2.innerText = item.show.name;
 
-    article.append(h2);
-    target.append(article);
+    const h2 = document.createElement('h2');
+    h2.textContent = show.name;
+
+    const a = document.createElement('a');
+    a.href = show.url;
+    a.target = '_blank';
+    a.textContent = 'View details';
+
+    const img = document.createElement('img');
+    if (show.image) {
+      img.src = show.image.medium;
+    } else {
+      img.src = 'https://placehold.co/210x295?text=Not%20Found';
+    }
+    img.alt = show.name;
+
+    const summary = document.createElement('div');
+    summary.innerHTML = show.summary;
+
+
+    article.appendChild(h2);
+    article.appendChild(a);
+    article.appendChild(img);
+    article.appendChild(summary);
+
+    results.appendChild(article);
   }
 });
